@@ -7,7 +7,8 @@
     // ==================== CONFIG ====================
     const CONFIG = {
         ADMIN_IDS: ['7324360114'],
-        API_URL: 'api.php',
+        // ↓ Paste URL Google Apps Script vào đây sau khi deploy
+        API_URL: 'https://script.google.com/macros/s/AKfycbxpccRb8pZZlINQbb4TdFzf3S5Qlqr8ctZ-Ztwljxbf4h-6h-V_xdKq_p5VyV4RT30X/exec',
         BASE_RATES: { 4: 40, 5: 35, 6: 30, 7: 20, 8: 10 },
         MAX_RATE: 85,
         MIN_RATE: 3,
@@ -653,15 +654,28 @@
     }
 
     // ==================== API ====================
+    // Google Apps Script: GET requests dùng URL params, POST requests dùng body
+    // Apps Script tự redirect → cần follow redirect
     function apiCall(action, data, callback) {
+        var isGetAction = (action.indexOf('get_') === 0 || action === 'check_access' || action === 'copy_unused_keys');
         var url = CONFIG.API_URL + '?action=' + action;
-        var opts = { method: 'GET', headers: { 'Content-Type': 'application/json' } };
+        var opts = { redirect: 'follow' };
 
-        if (data && action.indexOf('get_') === 0) {
-            for (var key in data) { url += '&' + key + '=' + encodeURIComponent(data[key]); }
-        } else if (data) {
+        if (isGetAction) {
+            // GET: đính kèm params vào URL
+            opts.method = 'GET';
+            if (data) {
+                for (var key in data) {
+                    url += '&' + key + '=' + encodeURIComponent(data[key]);
+                }
+            }
+            // Thêm user_id vào GET params để Apps Script nhận được
+            if (state.userId) url += '&user_id=' + encodeURIComponent(state.userId);
+        } else {
+            // POST: gửi JSON body
             opts.method = 'POST';
-            opts.body = JSON.stringify(Object.assign({ admin_id: state.userId }, data));
+            opts.headers = { 'Content-Type': 'text/plain' }; // Apps Script yêu cầu text/plain để tránh preflight
+            opts.body = JSON.stringify(Object.assign({ admin_id: state.userId, user_id: state.userId }, data || {}));
         }
 
         fetch(url, opts)
@@ -688,22 +702,21 @@
 
     // ==================== LOAD DATA ====================
     function loadSettings() {
-        fetch(CONFIG.API_URL + '?action=get_settings')
-            .then(function (r) { return r.json(); })
-            .then(function (d) {
-                if (d.success && d.data) {
-                    state.isMaintenance = d.data.maintenance || false;
-                    if (d.data.admin_ids) CONFIG.ADMIN_IDS = d.data.admin_ids;
-                    checkAdmin();
-                    checkMaintenance();
-                    if (state.isAdmin) {
-                        document.getElementById('maintenanceToggle').checked = state.isMaintenance;
-                        document.getElementById('maintenanceStatus').textContent =
-                            state.isMaintenance ? '🔴 Đang bật' : 'Đang tắt';
-                    }
+        apiCall('get_settings', null, function(err, d) {
+            if (!err && d && d.success && d.data) {
+                state.isMaintenance = d.data.maintenance || false;
+                if (d.data.admin_ids) CONFIG.ADMIN_IDS = d.data.admin_ids;
+                checkAdmin();
+                checkMaintenance();
+                if (state.isAdmin) {
+                    document.getElementById('maintenanceToggle').checked = state.isMaintenance;
+                    document.getElementById('maintenanceStatus').textContent =
+                        state.isMaintenance ? '🔴 Đang bật' : 'Đang tắt';
                 }
-            })
-            .catch(function () { checkMaintenance(); });
+            } else {
+                checkMaintenance();
+            }
+        });
     }
 
     function checkMaintenance() {
@@ -716,32 +729,25 @@
     }
 
     function loadSequences(level) {
-        fetch(CONFIG.API_URL + '?action=get_sequences&level=' + level)
-            .then(function (r) { return r.json(); })
-            .then(function (d) {
-                if (d.success && d.data) {
-                    state.sequences[level] = d.data;
-                    localStorage.setItem('fco_seq_' + level, JSON.stringify(d.data));
-                }
-            })
-            .catch(function () {
+        apiCall('get_sequences', { level: level }, function(err, d) {
+            if (!err && d && d.success && d.data) {
+                state.sequences[level] = d.data;
+                localStorage.setItem('fco_seq_' + level, JSON.stringify(d.data));
+                recalculateRate();
+            } else {
                 var cached = localStorage.getItem('fco_seq_' + level);
                 if (cached) state.sequences[level] = JSON.parse(cached);
-            });
+            }
+        });
     }
 
     function loadAnnouncements() {
-        fetch(CONFIG.API_URL + '?action=get_announcements')
-            .then(function (r) { return r.json(); })
-            .then(function (d) {
-                if (d.success && d.data) {
-                    state.announcements = d.data;
-                    renderAnnouncements();
-                }
-            })
-            .catch(function () {
-                renderAnnouncements();
-            });
+        apiCall('get_announcements', null, function(err, d) {
+            if (!err && d && d.success && d.data) {
+                state.announcements = d.data;
+            }
+            renderAnnouncements();
+        });
     }
 
     function renderAnnouncements() {
@@ -764,19 +770,14 @@
     function loadAdminSequences() {
         var level = state.adminEditLevel;
         var textarea = document.getElementById('adminSequences');
-        fetch(CONFIG.API_URL + '?action=get_sequences&level=' + level)
-            .then(function (r) { return r.json(); })
-            .then(function (d) {
-                if (d.success && d.data) {
-                    textarea.value = d.data.join('\n');
-                } else {
-                    textarea.value = '';
-                }
-            })
-            .catch(function () {
+        apiCall('get_sequences', { level: level }, function(err, d) {
+            if (!err && d && d.success && d.data) {
+                textarea.value = d.data.join('\n');
+            } else {
                 var cached = localStorage.getItem('fco_seq_' + level);
                 textarea.value = cached ? JSON.parse(cached).join('\n') : '';
-            });
+            }
+        });
     }
 
     function saveSequences() {
@@ -823,23 +824,16 @@
 
     function toggleMaintenance() {
         var checked = document.getElementById('maintenanceToggle').checked;
-        fetch(CONFIG.API_URL + '?action=toggle_maintenance', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ admin_id: state.userId, maintenance: checked })
-        })
-            .then(function (r) { return r.json(); })
-            .then(function (d) {
-                if (d.success) {
-                    state.isMaintenance = checked;
-                    document.getElementById('maintenanceStatus').textContent =
-                        checked ? '🔴 Đang bật' : 'Đang tắt';
-                    showToast(checked ? 'Đã bật bảo trì' : 'Đã tắt bảo trì', checked ? 'error' : 'success');
-                }
-            })
-            .catch(function () {
+        apiCall('toggle_maintenance', { maintenance: checked }, function(err, d) {
+            if (!err && d && d.success) {
+                state.isMaintenance = checked;
+                document.getElementById('maintenanceStatus').textContent =
+                    checked ? '🔴 Đang bật' : 'Đang tắt';
+                showToast(checked ? 'Đã bật bảo trì' : 'Đã tắt bảo trì', checked ? 'error' : 'success');
+            } else {
                 showToast('Lỗi kết nối API', 'error');
-            });
+            }
+        });
     }
 
     function addAnnouncement() {
@@ -847,42 +841,32 @@
         var text = textarea.value.trim();
         if (!text) { showToast('Nhập nội dung thông báo', 'error'); return; }
 
-        fetch(CONFIG.API_URL + '?action=save_announcement', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ admin_id: state.userId, text: text })
-        })
-            .then(function (r) { return r.json(); })
-            .then(function (d) {
-                if (d.success) {
-                    textarea.value = '';
-                    state.announcements.unshift({
-                        id: (d.data && d.data.id) || Date.now(),
-                        text: text,
-                        date: new Date().toLocaleDateString('vi-VN')
-                    });
-                    renderAdminAnnouncements();
-                    showToast('Đã thêm thông báo', 'success');
-                }
-            })
-            .catch(function () { showToast('Lỗi kết nối', 'error'); });
+        apiCall('save_announcement', { text: text }, function(err, d) {
+            if (!err && d && d.success) {
+                textarea.value = '';
+                state.announcements.unshift({
+                    id: (d.data && d.data.id) || Date.now(),
+                    text: text,
+                    date: new Date().toLocaleDateString('vi-VN')
+                });
+                renderAdminAnnouncements();
+                showToast('Đã thêm thông báo', 'success');
+            } else {
+                showToast('Lỗi kết nối', 'error');
+            }
+        });
     }
 
     function deleteAnnouncement(id) {
-        fetch(CONFIG.API_URL + '?action=delete_announcement', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ admin_id: state.userId, id: id })
-        })
-            .then(function (r) { return r.json(); })
-            .then(function (d) {
-                if (d.success) {
-                    state.announcements = state.announcements.filter(function (a) { return a.id !== id; });
-                    renderAdminAnnouncements();
-                    showToast('Đã xóa thông báo', 'success');
-                }
-            })
-            .catch(function () { showToast('Lỗi', 'error'); });
+        apiCall('delete_announcement', { id: id }, function(err, d) {
+            if (!err && d && d.success) {
+                state.announcements = state.announcements.filter(function (a) { return a.id !== id; });
+                renderAdminAnnouncements();
+                showToast('Đã xóa thông báo', 'success');
+            } else {
+                showToast('Lỗi', 'error');
+            }
+        });
     }
 
     function renderAdminAnnouncements() {
@@ -981,12 +965,12 @@
 
     // ==================== KEY SYSTEM ====================
     function checkUserAccess() {
-        var url = CONFIG.API_URL + '?action=check_access&user_id=' + encodeURIComponent(state.userId || '');
-        if (state.userName) url += '&first_name=' + encodeURIComponent(state.userName);
-        if (state.userUsername) url += '&username=' + encodeURIComponent(state.userUsername);
+        var extraData = {};
+        if (state.userName) extraData.first_name = state.userName;
+        if (state.userUsername) extraData.username = state.userUsername;
 
-        fetch(url).then(function (r) { return r.json(); }).then(function (d) {
-            var data = d.success ? d.data : { access: false, type: 'locked' };
+        apiCall('check_access', extraData, function(err, d) {
+            var data = (!err && d && d.success) ? d.data : { access: false, type: 'locked' };
             state.accessType = data.type;
             state.keyInfo = data;
 
@@ -1012,22 +996,16 @@
                 updateKeyTabUI();
                 if (data.expiry_warning) {
                     var banner = document.getElementById('expiryBanner');
-                    var text = document.getElementById('expiryText');
+                    var textEl = document.getElementById('expiryText');
                     banner.classList.remove('hidden');
                     var dl = data.days_left !== null ? Math.ceil(data.days_left) : 0;
-                    text.textContent = 'Key sắp hết hạn! Còn ' + dl + ' ngày. Liên hệ Admin gia hạn.';
+                    textEl.textContent = 'Key sắp hết hạn! Còn ' + dl + ' ngày. Liên hệ Admin gia hạn.';
                 }
                 return;
             }
 
             // Không có key → hiện modal nhưng cho phép đóng để xem Info/Key tab
             updateAccessBadge(data);
-            showKeyModal(false);
-            updateKeyTabUI();
-        }).catch(function () {
-            // Offline → hiện modal
-            state.accessType = 'locked';
-            updateAccessBadge({ type: 'locked' });
             showKeyModal(false);
             updateKeyTabUI();
         });
@@ -1292,21 +1270,19 @@
     // Bind user search once (not inside fetch to avoid duplicates)
     var _userSearchBound = false;
     function loadAdminUsers() {
-        fetch(CONFIG.API_URL + '?action=get_users&admin_id=' + encodeURIComponent(state.userId))
-            .then(function (r) { return r.json(); })
-            .then(function (d) {
-                if (d.success && d.data) {
-                    state._lastUserData = d.data;
-                    renderUserStats(d.data.stats);
-                    renderUserList(d.data.users, '');
-                    if (!_userSearchBound) {
-                        _userSearchBound = true;
-                        document.getElementById('userSearch').addEventListener('input', function () {
-                            renderUserList(state._lastUserData.users, this.value.trim().toLowerCase());
-                        });
-                    }
+        apiCall('get_users', { admin_id: state.userId }, function(err, d) {
+            if (!err && d && d.success && d.data) {
+                state._lastUserData = d.data;
+                renderUserStats(d.data.stats);
+                renderUserList(d.data.users, '');
+                if (!_userSearchBound) {
+                    _userSearchBound = true;
+                    document.getElementById('userSearch').addEventListener('input', function () {
+                        renderUserList(state._lastUserData.users, this.value.trim().toLowerCase());
+                    });
                 }
-            }).catch(function () { });
+            }
+        });
     }
 
     function renderUserStats(stats) {
@@ -1360,33 +1336,27 @@
                 var uid    = this.getAttribute('data-uid');
                 var isBan  = this.classList.contains('ban-btn');
                 var action = isBan ? 'ban_user' : 'unban_user';
-                fetch(CONFIG.API_URL + '?action=' + action, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ admin_id: state.userId, user_id: uid })
-                }).then(function (r) { return r.json(); }).then(function (d) {
-                    if (d.success) { showToast(isBan ? 'Đã ban user' : 'Đã unban user', 'success'); loadAdminUsers(); loadAdminLogs(); }
-                    else showToast(d.error || 'Lỗi', 'error');
-                }).catch(function () { showToast('Lỗi kết nối', 'error'); });
+                apiCall(action, { user_id: uid }, function(err, d) {
+                    if (!err && d && d.success) { showToast(isBan ? 'Đã ban user' : 'Đã unban user', 'success'); loadAdminUsers(); loadAdminLogs(); }
+                    else showToast((d && d.error) || 'Lỗi', 'error');
+                });
             });
         });
     }
 
     function loadAdminStats() {
-        fetch(CONFIG.API_URL + '?action=get_stats&admin_id=' + encodeURIComponent(state.userId))
-            .then(function (r) { return r.json(); })
-            .then(function (d) {
-                if (d.success && d.data) {
-                    renderRevenueStats(d.data);
-                    // Update Dashboard 6 cards
-                    var el;
-                    el = document.getElementById('dashTotalUsers'); if (el) el.textContent = d.data.total_users || 0;
-                    el = document.getElementById('dashVipUsers'); if (el) el.textContent = d.data.vip_users || 0;
-                    el = document.getElementById('dashBanned'); if (el) el.textContent = d.data.banned_count || 0;
-                    el = document.getElementById('dashTotalKeys'); if (el) el.textContent = d.data.total_keys || 0;
-                    el = document.getElementById('dashActiveKeys'); if (el) el.textContent = d.data.active_keys || 0;
-                    el = document.getElementById('dashOnline'); if (el) el.textContent = d.data.online_now || 0;
-                }
-            }).catch(function () { });
+        apiCall('get_stats', { admin_id: state.userId }, function(err, d) {
+            if (!err && d && d.success && d.data) {
+                renderRevenueStats(d.data);
+                var el;
+                el = document.getElementById('dashTotalUsers'); if (el) el.textContent = d.data.total_users || 0;
+                el = document.getElementById('dashVipUsers'); if (el) el.textContent = d.data.vip_users || 0;
+                el = document.getElementById('dashBanned'); if (el) el.textContent = d.data.banned_count || 0;
+                el = document.getElementById('dashTotalKeys'); if (el) el.textContent = d.data.total_keys || 0;
+                el = document.getElementById('dashActiveKeys'); if (el) el.textContent = d.data.active_keys || 0;
+                el = document.getElementById('dashOnline'); if (el) el.textContent = d.data.online_now || 0;
+            }
+        });
     }
 
     function renderRevenueStats(data) {
@@ -1407,34 +1377,26 @@
     }
 
     function handleCopyUnusedKeys() {
-        fetch(CONFIG.API_URL + '?action=copy_unused_keys&admin_id=' + encodeURIComponent(state.userId))
-            .then(function (r) { return r.json(); })
-            .then(function (d) {
-                if (d.success && d.data) {
-                    var keys = d.data.keys || [];
-                    if (keys.length === 0) {
-                        showToast('Không có key chưa dùng', 'info');
-                        return;
-                    }
-                    var text = keys.join('\n');
-                    if (navigator.clipboard) {
-                        navigator.clipboard.writeText(text).then(function () {
-                            showToast('📋 Đã copy ' + keys.length + ' key!', 'success');
-                        });
-                    } else {
-                        // Fallback
-                        var ta = document.createElement('textarea');
-                        ta.value = text;
-                        document.body.appendChild(ta);
-                        ta.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(ta);
+        apiCall('copy_unused_keys', { admin_id: state.userId }, function(err, d) {
+            if (!err && d && d.success && d.data) {
+                var keys = d.data.keys || [];
+                if (keys.length === 0) { showToast('Không có key chưa dùng', 'info'); return; }
+                var text = keys.join('\n');
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(text).then(function () {
                         showToast('📋 Đã copy ' + keys.length + ' key!', 'success');
-                    }
+                    });
                 } else {
-                    showToast(d.error || 'Lỗi', 'error');
+                    var ta = document.createElement('textarea');
+                    ta.value = text;
+                    document.body.appendChild(ta); ta.select();
+                    document.execCommand('copy'); document.body.removeChild(ta);
+                    showToast('📋 Đã copy ' + keys.length + ' key!', 'success');
                 }
-            }).catch(function () { showToast('Lỗi kết nối', 'error'); });
+            } else {
+                showToast((d && d.error) || 'Lỗi', 'error');
+            }
+        });
     }
 
     // ==================== ADMIN BROADCAST ====================
@@ -1470,24 +1432,10 @@
         statusEl.textContent = '';
         statusEl.className = 'save-status';
 
-        fetch(CONFIG.API_URL + '?action=send_message', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                admin_id: state.userId,
-                target:   target,
-                user_id:  userId,
-                message:  msg
-            })
-        })
-        .then(function(r) {
-            if (!r.ok) throw new Error('HTTP ' + r.status);
-            return r.json();
-        })
-        .then(function(d) {
+        apiCall('send_message', { target: target, message: msg, user_id: userId }, function(err, d) {
             btn.disabled = false;
             btn.textContent = '🚀 Gửi tin nhắn';
-            if (d.success) {
+            if (!err && d && d.success) {
                 var sent   = (d.data && d.data.sent)   ? d.data.sent   : 0;
                 var failed = (d.data && d.data.failed) ? d.data.failed : 0;
                 var total  = (d.data && d.data.total)  ? d.data.total  : 0;
@@ -1498,25 +1446,17 @@
                 showToast('📨 Đã gửi tới ' + sent + ' user!', 'success');
                 loadAdminLogs();
             } else {
-                statusEl.textContent = '❌ ' + (d.error || 'Lỗi không xác định');
+                statusEl.textContent = '❌ ' + ((d && d.error) || err && err.message || 'Lỗi không xác định');
                 statusEl.className = 'save-status error';
-                showToast('❌ ' + (d.error || 'Lỗi gửi'), 'error');
+                showToast('❌ ' + ((d && d.error) || 'Lỗi gửi'), 'error');
             }
-        })
-        .catch(function(err) {
-            btn.disabled = false;
-            btn.textContent = '🚀 Gửi tin nhắn';
-            statusEl.textContent = '❌ Lỗi kết nối: ' + (err.message || 'Không thể kết nối API');
-            statusEl.className = 'save-status error';
         });
     }
 
     function loadAdminLogs() {
-        fetch(CONFIG.API_URL + '?action=get_admin_logs&admin_id=' + encodeURIComponent(state.userId))
-            .then(function (r) { return r.json(); })
-            .then(function (d) {
-                if (d.success && d.data) renderAdminLogs(d.data);
-            }).catch(function () { });
+        apiCall('get_admin_logs', { admin_id: state.userId }, function(err, d) {
+            if (!err && d && d.success && d.data) renderAdminLogs(d.data);
+        });
     }
 
     function renderAdminLogs(logs) {
