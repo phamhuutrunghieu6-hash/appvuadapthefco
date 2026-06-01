@@ -1,472 +1,242 @@
 <!DOCTYPE html>
-<html lang="vi" data-theme="dark">
+<html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="FCO Auto Upgrade PRO V3.0 - Công cụ tìm dây mồi nâng cấp cầu thủ FC Online">
-    <meta name="theme-color" content="#050510">
-    <title>FCO Auto Upgrade PRO 🚀</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=3000531">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VuaDapTheFCO — Bot & Tools Chính Thức</title>
+  <meta name="description" content="Kênh chia sẻ Bot & Tool Telegram chính thức của VuaDapTheFCO. Miễn phí · Uy tín · Hỗ trợ 24/7" />
+  <meta property="og:title" content="VuaDapTheFCO — Bot & Tools" />
+  <meta property="og:description" content="Kênh bot & tool chính thức số 1. Miễn phí - Uy tín." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700;1,800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-    <!-- Space Canvas -->
-    <canvas id="spaceCanvas" class="space-canvas"></canvas>
+  <!-- ===== NAVBAR ===== -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a class="nav-logo" href="#home">
+        <span class="logo-icon">⚽</span>
+        <span class="logo-text">VuaDapTheFCO</span>
+      </a>
+      <div class="nav-links" id="navLinks">
+        <a href="#home"    class="nav-link" id="nl-home">Trang Chủ</a>
+        <a href="#bots"    class="nav-link" id="nl-bots">Bot & Tools</a>
+        <a href="#guide"   class="nav-link" id="nl-guide">Hướng Dẫn</a>
+        <a href="#contact" class="nav-link" id="nl-contact">Liên Hệ</a>
+      </div>
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
 
-    <!-- Meteor Container -->
-    <div class="meteor-container" id="meteorContainer"></div>
+  <!-- ===== HERO ===== -->
+  <section class="hero" id="home">
+    <div class="hero-bg-grid"></div>
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
 
-    <!-- Nebula BG -->
-    <div class="nebula-bg"></div>
-
-    <!-- Maintenance Overlay -->
-    <div id="maintenanceOverlay" class="maintenance-overlay hidden">
-        <div class="maintenance-content">
-            <div class="maintenance-icon">🔧</div>
-            <h2>Đang bảo trì</h2>
-            <p>Hệ thống đang được nâng cấp, quay lại sau nhé!</p>
+    <div class="hero-container">
+      <!-- Left content -->
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="badge-pulse"></span>
+          ⚡ Kênh Chính Thức · Hoạt động 24/7
         </div>
-    </div>
 
-    <!-- Banned Overlay -->
-    <div id="bannedOverlay" class="maintenance-overlay hidden">
-        <div class="maintenance-content">
-            <div class="maintenance-icon">🚫</div>
-            <h2>Tài khoản bị khóa</h2>
-            <p>Liên hệ Admin để được hỗ trợ mở khóa.</p>
+        <h1 class="hero-title">
+          <span class="ht-1">VUA ĐẬP</span>
+          <span class="ht-2">THẺ <em>FCO</em></span>
+        </h1>
+
+        <p class="hero-sub">
+          Kênh bot &amp; tool Telegram chính thức số&nbsp;1<br />
+          <span class="hero-dots">Miễn phí · Uy tín · Không giới hạn</span>
+        </p>
+
+        <div class="hero-actions">
+          <a href="#bots"    class="btn btn-dark">🤖 Khám Phá Bot</a>
+          <a href="#contact" class="btn btn-outline">📞 Liên hệ Admin</a>
         </div>
-    </div>
 
-    <!-- Key Lock Modal (bottom sheet) -->
-    <div id="keyModal" class="key-modal hidden">
-        <div class="key-modal-backdrop" id="keyModalBackdrop"></div>
-        <div class="key-modal-content">
-            <button id="keyModalClose" class="key-modal-close" aria-label="Đóng">✕</button>
-            <div class="key-modal-icon">🔑</div>
-            <h2 class="key-modal-title">Kích hoạt quyền truy cập</h2>
-            <p class="key-modal-desc" id="keyModalDesc">Nhập Key để sử dụng công cụ. Liên hệ Admin để mua Key.</p>
-            <div class="key-input-wrapper">
-                <input type="text" id="keyInput" class="key-input" placeholder="FCO-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false">
-            </div>
-            <button id="activateKeyBtn" class="key-activate-btn">⚡ Kích hoạt Key</button>
-            <div id="keyError" class="key-error"></div>
-            <div class="key-modal-footer">
-                <p>💬 Liên hệ Admin để mua Key</p>
-            </div>
+        <!-- Inline mini tags -->
+        <div class="hero-tags">
+          <span class="htag">✅ Free 100%</span>
+          <span class="htag">🚀 Cập nhật liên tục</span>
+          <span class="htag">🔒 An toàn</span>
         </div>
+      </div>
+
+      <!-- Right: floating stat card -->
+      <div class="hero-right">
+        <div class="stat-float-card">
+          <div class="sfc-header">
+            <div class="sfc-live">
+              <span class="live-dot"></span> Live Stats
+            </div>
+            <span class="sfc-date" id="sfcDate"></span>
+          </div>
+
+          <div class="sfc-main">
+            <div class="sfc-num" id="visitorCount">—</div>
+            <div class="sfc-label">Lượt truy cập</div>
+          </div>
+
+          <div class="sfc-divider"></div>
+
+          <div class="sfc-row">
+            <div class="sfc-stat">
+              <span class="sfc-val" id="botCount">1</span>
+              <span class="sfc-desc">Bot &amp; Tool</span>
+            </div>
+            <div class="sfc-stat">
+              <span class="sfc-val">24/7</span>
+              <span class="sfc-desc">Online</span>
+            </div>
+            <div class="sfc-stat">
+              <span class="sfc-val">100%</span>
+              <span class="sfc-desc">Free</span>
+            </div>
+          </div>
+
+          <div class="mini-chart">
+            <div class="mc-bar" style="--h:35%"></div>
+            <div class="mc-bar" style="--h:55%"></div>
+            <div class="mc-bar" style="--h:42%"></div>
+            <div class="mc-bar" style="--h:78%"></div>
+            <div class="mc-bar" style="--h:50%"></div>
+            <div class="mc-bar" style="--h:88%"></div>
+            <div class="mc-bar active" style="--h:72%"></div>
+          </div>
+        </div>
+
+        <!-- Floating badges -->
+        <div class="float-badge fb-1">🔥 Hot</div>
+        <div class="float-badge fb-2">⭐ VIP</div>
+      </div>
     </div>
+  </section>
 
-    <!-- Toast -->
-    <div id="toast" class="toast"></div>
-
-    <!-- App -->
-    <div id="app" class="app-container">
-
-        <!-- Header -->
-        <header class="app-header">
-            <div class="header-left">
-                <h1 class="app-title">⚡ FCO PRO</h1>
-                <span class="app-version" id="versionBadge">V3.0</span>
-            </div>
-            <div class="header-right">
-                <div id="userGreeting" class="user-greeting hidden">
-                    <div id="userAvatar" class="user-avatar">?</div>
-                    <span id="userDisplayName" class="user-display-name"></span>
-                </div>
-                <div id="accessBadge" class="access-badge hidden">
-                    <span id="accessBadgeText">VIP</span>
-                </div>
-                <button id="themeToggle" class="theme-toggle" aria-label="Đổi theme">
-                    <span class="theme-icon-light">☀️</span>
-                    <span class="theme-icon-dark">🌙</span>
-                </button>
-            </div>
-        </header>
-
-        <main class="tab-content">
-
-            <!-- Expiry Banner -->
-            <div id="expiryBanner" class="expiry-banner hidden">
-                <span class="expiry-icon">⚠️</span>
-                <span id="expiryText">Key sắp hết hạn!</span>
-            </div>
-
-            <!-- ══════════ TAB 1: MAIN TOOL ══════════ -->
-            <section id="tabMain" class="tab-pane active">
-
-                <!-- Level Selector -->
-                <div class="card level-card">
-                    <h3 class="card-title">🎯 Mức nâng cấp</h3>
-                    <div class="level-buttons" id="levelButtons">
-                        <button class="level-btn" data-level="4">+4</button>
-                        <button class="level-btn active" data-level="5">+5</button>
-                        <button class="level-btn" data-level="6">+6</button>
-                        <button class="level-btn" data-level="7">+7</button>
-                        <button class="level-btn" data-level="8">+8</button>
-                    </div>
-                </div>
-
-                <!-- Sequence Input -->
-                <div class="card sequence-card">
-                    <h3 class="card-title">🔢 Nhập dây mồi</h3>
-                    <div class="sequence-input-wrapper">
-                        <input type="text" id="sequenceInput" class="sequence-input"
-                               placeholder="Gõ từng số kết quả mồi..."
-                               inputmode="numeric" autocomplete="off" spellcheck="false">
-                        <button id="clearBtn" class="clear-btn" aria-label="Xóa">✕</button>
-                    </div>
-                    <div id="digitDisplay" class="digit-display"></div>
-                </div>
-
-                <!-- Rate Display -->
-                <div class="card rate-card">
-                    <h3 class="card-title">📡 Tỉ lệ thành công</h3>
-                    <div class="gauge-container">
-                        <svg class="gauge-svg" viewBox="0 0 200 200">
-                            <defs>
-                                <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%"   style="stop-color:#7c3aed"/>
-                                    <stop offset="50%"  style="stop-color:#06b6d4"/>
-                                    <stop offset="100%" style="stop-color:#10b981"/>
-                                </linearGradient>
-                                <linearGradient id="gaugeGradientHigh" x1="0%" y1="0%" x2="100%" y2="0%">
-                                    <stop offset="0%"   style="stop-color:#10b981"/>
-                                    <stop offset="100%" style="stop-color:#06b6d4"/>
-                                </linearGradient>
-                            </defs>
-                            <circle class="gauge-bg" cx="100" cy="100" r="80"/>
-                            <circle id="gaugeGlow"   class="gauge-glow" cx="100" cy="100" r="80"/>
-                            <circle id="gaugeCircle" class="gauge-fill" cx="100" cy="100" r="80"/>
-                        </svg>
-                        <div class="gauge-text">
-                            <span id="rateValue" class="rate-value">0</span>
-                            <span class="rate-unit">%</span>
-                        </div>
-                    </div>
-                    <div style="text-align:center">
-                        <div id="confidenceBadge" class="confidence-badge hidden"></div>
-                    </div>
-                    <div id="rateStatus" class="rate-status">✨ Nhập dây mồi để bắt đầu phân tích</div>
-                </div>
-
-                <!-- Roll Suggestion -->
-                <div class="card roll-card">
-                    <div class="roll-info">
-                        <span class="roll-label">🎲 Gợi ý Roll</span>
-                        <span id="rollSuggestion" class="roll-value">--</span>
-                    </div>
-                    <div id="rollAdvice" class="roll-advice"></div>
-                </div>
-            </section>
-
-            <!-- ══════════ TAB 2: KEY ══════════ -->
-            <section id="tabKey" class="tab-pane">
-
-                <!-- Contact Card -->
-                <div class="card contact-card" id="contactCard">
-                    <h3 class="card-title">💬 Liên hệ &amp; Mua Key</h3>
-                    <div class="contact-buttons" id="contactButtons"></div>
-                </div>
-
-                <!-- Key Status -->
-                <div class="card key-status-card">
-                    <div class="key-status-header">
-                        <span id="keyTabStatusIcon" class="key-tab-icon">🔒</span>
-                        <div class="key-status-info">
-                            <h3 id="keyTabStatusTitle" class="key-tab-title">Chưa kích hoạt</h3>
-                            <p id="keyTabStatusDesc" class="key-tab-desc">Mua Key từ Admin để sử dụng công cụ</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Activate Key -->
-                <div class="card">
-                    <h3 class="card-title">🔑 Kích hoạt Key</h3>
-                    <div class="key-tab-input-wrapper">
-                        <input type="text" id="keyTabInput" class="key-input"
-                               placeholder="FCO-XXXX-XXXX-XXXX"
-                               autocomplete="off" spellcheck="false">
-                    </div>
-                    <button id="keyTabActivateBtn" class="primary-btn">⚡ Kích hoạt Key</button>
-                    <div id="keyTabError" class="key-error"></div>
-                    <div id="keyTabSuccess" class="key-tab-success hidden"></div>
-                </div>
-
-                <!-- Benefits -->
-                <div class="card">
-                    <h3 class="card-title">⭐ Quyền lợi VIP</h3>
-                    <div class="key-benefits">
-                        <div class="benefit-item"><span class="benefit-icon">♾️</span><span>Sử dụng không giới hạn</span></div>
-                        <div class="benefit-item"><span class="benefit-icon">🚀</span><span>AI Engine V4.0 — 10 module phân tích</span></div>
-                        <div class="benefit-item"><span class="benefit-icon">💬</span><span>Hỗ trợ ưu tiên từ Admin</span></div>
-                        <div class="benefit-item"><span class="benefit-icon">🔥</span><span>Cập nhật dây mồi liên tục</span></div>
-                        <div class="benefit-item"><span class="benefit-icon">🎯</span><span>Confidence Scoring — biết khi nào vào kèo</span></div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ══════════ TAB 3: INFO ══════════ -->
-            <section id="tabInfo" class="tab-pane">
-
-                <!-- Announcements -->
-                <div class="card">
-                    <h3 class="card-title">📢 Thông báo</h3>
-                    <div id="announcementList" class="announcement-list">
-                        <div class="loading-spinner"></div>
-                    </div>
-                </div>
-
-                <!-- Pricing -->
-                <div class="card pricing-card">
-                    <h3 class="card-title">💎 Bảng giá Key</h3>
-                    <div class="pricing-grid">
-                        <div class="price-item">
-                            <div class="price-duration">1 Ngày</div>
-                            <div class="price-value" id="price1D">Liên hệ</div>
-                            <div class="price-desc">Trải nghiệm</div>
-                        </div>
-                        <div class="price-item">
-                            <div class="price-duration">7 Ngày</div>
-                            <div class="price-value" id="price7D">Liên hệ</div>
-                            <div class="price-desc">Phổ biến</div>
-                        </div>
-                        <div class="price-item popular">
-                            <div class="popular-tag">HOT</div>
-                            <div class="price-duration">30 Ngày</div>
-                            <div class="price-value" id="price30D">Liên hệ</div>
-                            <div class="price-desc">Tiết kiệm nhất</div>
-                        </div>
-                        <div class="price-item">
-                            <div class="price-duration">Vĩnh Viễn</div>
-                            <div class="price-value" id="priceLIFE">Liên hệ</div>
-                            <div class="price-desc">Một lần dùng mãi</div>
-                        </div>
-                    </div>
-                    <div class="price-contact">
-                        <p>💬 Nhắn Admin để được báo giá và hỗ trợ mua Key</p>
-                    </div>
-                </div>
-
-                <!-- Guide -->
-                <div class="card">
-                    <h3 class="card-title">📖 Hướng dẫn</h3>
-                    <div class="guide-content">
-                        <div class="guide-step"><span class="step-number">1</span><p>Chọn mức nâng cấp thẻ cầu thủ (+4 đến +8)</p></div>
-                        <div class="guide-step"><span class="step-number">2</span><p>Nhập dây mồi từ game — mỗi lần đập thẻ mồi, nhập kết quả vào ô</p></div>
-                        <div class="guide-step"><span class="step-number">3</span><p>AI V4.0 tự động phân tích pattern và tính tỉ lệ % thành công</p></div>
-                        <div class="guide-step"><span class="step-number">4</span><p>Khi tỉ lệ cao (&gt;70%) và badge xanh "Tin cậy" → vào kèo nâng cấp</p></div>
-                        <div class="guide-step"><span class="step-number">5</span><p>Tham khảo Gợi ý Roll để biết nên roll bao nhiêu lần tối ưu</p></div>
-                    </div>
-                </div>
-
-                <!-- Tool Info -->
-                <div class="card">
-                    <h3 class="card-title">ℹ️ Về Tool</h3>
-                    <div class="info-content">
-                        <p><strong>FCO Auto Upgrade PRO V3.0</strong></p>
-                        <p>Telegram Mini App Edition — AI Engine V4.0</p>
-                        <p style="margin-top:8px">Công cụ hỗ trợ tìm dây mồi đẹp để nâng cấp cầu thủ FC Online. Sử dụng thuật toán AI V4.0 với 10 module phân tích pattern, confidence scoring và trend analysis.</p>
-                        <p style="margin-top:8px"><strong>Lưu ý:</strong> Tool giúp tìm dây mồi hoàn hảo — không đảm bảo 100% do server game thay đổi liên tục 😅</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ══════════ TAB 4: ADMIN ══════════ -->
-            <section id="tabAdmin" class="tab-pane">
-
-                <!-- Dashboard -->
-                <div class="card admin-card">
-                    <h3 class="card-title admin-title">📊 Dashboard</h3>
-                    <div class="dash-grid" id="adminDashboard">
-                        <div class="dash-item">
-                            <div class="dash-icon">👥</div>
-                            <span class="dash-num" id="dashTotalUsers">0</span>
-                            <span class="dash-label">Tổng User</span>
-                        </div>
-                        <div class="dash-item">
-                            <div class="dash-icon">⭐</div>
-                            <span class="dash-num" id="dashVipUsers">0</span>
-                            <span class="dash-label">VIP</span>
-                        </div>
-                        <div class="dash-item">
-                            <div class="dash-icon">🚫</div>
-                            <span class="dash-num" id="dashBanned">0</span>
-                            <span class="dash-label">Banned</span>
-                        </div>
-                        <div class="dash-item">
-                            <div class="dash-icon">🔑</div>
-                            <span class="dash-num" id="dashTotalKeys">0</span>
-                            <span class="dash-label">Tổng Key</span>
-                        </div>
-                        <div class="dash-item">
-                            <div class="dash-icon">✅</div>
-                            <span class="dash-num" id="dashActiveKeys">0</span>
-                            <span class="dash-label">Active</span>
-                        </div>
-                        <div class="dash-item">
-                            <div class="dash-icon">🟢</div>
-                            <span class="dash-num" id="dashOnline">0</span>
-                            <span class="dash-label">Online</span>
-                        </div>
-                    </div>
-                    <div class="quick-actions">
-                        <button class="quick-btn" id="quickCopyKeys">📋 Copy Keys</button>
-                        <button class="quick-btn" id="quickClearLogs">🗑️ Clear Logs</button>
-                        <button class="quick-btn" id="quickRefresh">🔄 Refresh</button>
-                    </div>
-                </div>
-
-                <!-- Key Management -->
-                <div class="card admin-card">
-                    <h3 class="card-title admin-title">🔑 Quản lý Key</h3>
-                    <div class="key-gen-row">
-                        <select id="keyType" class="key-select">
-                            <option value="1D">1 Ngày</option>
-                            <option value="7D" selected>7 Ngày</option>
-                            <option value="30D">30 Ngày</option>
-                            <option value="LIFE">Vĩnh viễn</option>
-                        </select>
-                        <select id="keyCount" class="key-select">
-                            <option value="1">1 key</option>
-                            <option value="3">3 key</option>
-                            <option value="5">5 key</option>
-                            <option value="10">10 key</option>
-                        </select>
-                        <button id="generateKeysBtn" class="admin-btn key-gen-btn">🔧 Tạo</button>
-                    </div>
-                    <div id="keyStats" class="key-stats"></div>
-                    <div class="key-search-row">
-                        <input type="text" id="keySearch" class="search-input" placeholder="🔍 Tìm key...">
-                    </div>
-                    <div class="key-filter-row">
-                        <button class="key-filter-btn active" data-filter="all">Tất cả</button>
-                        <button class="key-filter-btn" data-filter="unused">Chưa dùng</button>
-                        <button class="key-filter-btn" data-filter="active">Active</button>
-                        <button class="key-filter-btn" data-filter="expired">Hết hạn</button>
-                    </div>
-                    <div id="keyList" class="key-list"></div>
-                </div>
-
-                <!-- Maintenance -->
-                <div class="card admin-card">
-                    <h3 class="card-title admin-title">🔧 Bảo trì hệ thống</h3>
-                    <div class="maintenance-toggle-wrapper">
-                        <label class="switch">
-                            <input type="checkbox" id="maintenanceToggle">
-                            <span class="slider round"></span>
-                        </label>
-                        <span id="maintenanceStatus">Đang tắt</span>
-                    </div>
-                </div>
-
-                <!-- Sequence Management -->
-                <div class="card admin-card">
-                    <h3 class="card-title admin-title">🎯 Cập nhật dây mồi</h3>
-                    <div class="admin-level-tabs" id="adminLevelTabs">
-                        <button class="admin-level-btn active" data-admin-level="4">+4</button>
-                        <button class="admin-level-btn" data-admin-level="5">+5</button>
-                        <button class="admin-level-btn" data-admin-level="6">+6</button>
-                        <button class="admin-level-btn" data-admin-level="7">+7</button>
-                        <button class="admin-level-btn" data-admin-level="8">+8</button>
-                    </div>
-                    <div class="sequence-help">
-                        <p>📝 Mỗi dòng 1 dây mồi</p>
-                        <p>Format: <code>dây_gốc=số1=số2=số3...</code></p>
-                        <p>Ví dụ: <code>422=2=4=6=8</code></p>
-                    </div>
-                    <textarea id="adminSequences" class="admin-textarea" placeholder="422=2=4=6=8&#10;1221=1=2=3=6"></textarea>
-                    <button id="saveSequences" class="admin-btn save-btn">💾 Lưu dây mồi</button>
-                    <div id="saveStatus" class="save-status"></div>
-                </div>
-
-                <!-- Announcements -->
-                <div class="card admin-card">
-                    <h3 class="card-title admin-title">📢 Thông báo</h3>
-                    <textarea id="newAnnouncement" class="admin-textarea small" placeholder="Nhập nội dung thông báo mới..."></textarea>
-                    <button id="addAnnouncement" class="admin-btn">➕ Thêm thông báo</button>
-                    <div id="adminAnnouncementList" class="announcement-list admin-list" style="margin-top:12px"></div>
-                </div>
-
-                <!-- Bot Broadcast -->
-                <div class="card admin-card">
-                    <h3 class="card-title admin-title">💬 Nhắn tin cho User</h3>
-                    <div class="broadcast-info">
-                        <span class="broadcast-icon">🤖</span>
-                        <p>Gửi tin nhắn trực tiếp đến User qua Telegram Bot.</p>
-                    </div>
-                    <div class="broadcast-target-row">
-                        <select id="broadcastTarget" class="key-select" style="width:100%">
-                            <option value="all">📢 Tất cả Users</option>
-                            <option value="vip">⭐ Chỉ VIP Users</option>
-                            <option value="single">👤 Một User cụ thể</option>
-                        </select>
-                    </div>
-                    <div id="broadcastUserIdRow" class="broadcast-userid-row hidden">
-                        <input type="text" id="broadcastUserId" class="search-input" placeholder="Nhập Telegram User ID..." style="margin-bottom:8px">
-                    </div>
-                    <textarea id="broadcastMessage" class="admin-textarea small" placeholder="Nội dung tin nhắn gửi cho User..."></textarea>
-                    <button id="sendBroadcastBtn" class="admin-btn broadcast-btn">🚀 Gửi tin nhắn</button>
-                    <div id="broadcastStatus" class="save-status"></div>
-                </div>
-
-                <!-- User Management -->
-                <div class="card admin-card">
-                    <h3 class="card-title admin-title">👥 Quản lý User</h3>
-                    <div id="userStats" class="key-stats"></div>
-                    <div class="user-search-row">
-                        <input type="text" id="userSearch" class="search-input" placeholder="🔍 Tìm user theo ID hoặc tên...">
-                    </div>
-                    <div class="user-sort-row">
-                        <select id="userSort" class="key-select" style="flex:1">
-                            <option value="last_seen">Last Seen</option>
-                            <option value="visits">Lượt truy cập</option>
-                            <option value="access">Loại tài khoản</option>
-                        </select>
-                    </div>
-                    <div id="userList" class="user-list"></div>
-                </div>
-
-                <!-- Stats -->
-                <div class="card admin-card">
-                    <h3 class="card-title admin-title">📈 Thống kê</h3>
-                    <div id="revenueStats" class="revenue-stats"></div>
-                </div>
-
-                <!-- Admin Logs -->
-                <div class="card admin-card">
-                    <h3 class="card-title admin-title">📝 Nhật ký Admin</h3>
-                    <div id="adminLogList" class="admin-log-list"></div>
-                </div>
-            </section>
-        </main>
-
-        <!-- Bottom Nav -->
-        <nav class="bottom-nav">
-            <button class="nav-btn active" data-tab="tabMain" id="navMain">
-                <span class="nav-icon">⚡</span>
-                <span class="nav-label">Dây Mồi</span>
-            </button>
-            <button class="nav-btn" data-tab="tabKey" id="navKey">
-                <span class="nav-icon">🔑</span>
-                <span class="nav-label">Key</span>
-            </button>
-            <button class="nav-btn" data-tab="tabInfo" id="navInfo">
-                <span class="nav-icon">📡</span>
-                <span class="nav-label">Tin Tức</span>
-            </button>
-            <button class="nav-btn admin-only hidden" data-tab="tabAdmin" id="navAdmin">
-                <span class="nav-icon">⚙️</span>
-                <span class="nav-label">Admin</span>
-            </button>
-        </nav>
+  <!-- ===== MARQUEE ===== -->
+  <div class="marquee-wrap">
+    <div class="marquee-inner">
+      <div class="marquee-track" id="marqueeTrack">
+        <span>🔥 Bot mới vừa cập nhật</span><span class="mdot">·</span>
+        <span>✅ Hoàn toàn miễn phí</span><span class="mdot">·</span>
+        <span>🚀 Tốc độ cao · Ổn định</span><span class="mdot">·</span>
+        <span>💎 Hỗ trợ 24/7</span><span class="mdot">·</span>
+        <span>⭐ Uy tín hàng đầu</span><span class="mdot">·</span>
+        <span>🤖 Thêm bot mỗi ngày</span><span class="mdot">·</span>
+        <span>🔥 Bot mới vừa cập nhật</span><span class="mdot">·</span>
+        <span>✅ Hoàn toàn miễn phí</span><span class="mdot">·</span>
+        <span>🚀 Tốc độ cao · Ổn định</span><span class="mdot">·</span>
+        <span>💎 Hỗ trợ 24/7</span><span class="mdot">·</span>
+        <span>⭐ Uy tín hàng đầu</span><span class="mdot">·</span>
+        <span>🤖 Thêm bot mỗi ngày</span><span class="mdot">·</span>
+      </div>
     </div>
+  </div>
 
-    <script src="ai-engine.js?v=3000531"></script>
-    <script src="key-system.js?v=3000531"></script>
-    <script src="app.js?v=3000531"></script>
+  <!-- ===== BENTO GRID ===== -->
+  <section class="bento-section" id="bots">
+    <div class="section-wrap">
+      <div class="section-header">
+        <div class="section-tag">🤖 Danh Sách</div>
+        <h2 class="section-title">Bot &amp; <span class="gold-text">Công Cụ</span></h2>
+        <p class="section-sub">Tất cả đều miễn phí — nhấn để dùng ngay trên Telegram</p>
+      </div>
+      <div class="bento-grid" id="bentoGrid">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== GUIDE ===== -->
+  <section class="guide-section" id="guide">
+    <div class="section-wrap">
+      <div class="section-header">
+        <div class="section-tag">📖 Hướng Dẫn</div>
+        <h2 class="section-title">Cách Sử <span class="gold-text">Dụng</span></h2>
+        <p class="section-sub">Ba bước đơn giản để bắt đầu</p>
+      </div>
+
+      <div class="guide-steps">
+        <div class="guide-step reveal">
+          <div class="gs-num">01</div>
+          <div class="gs-icon">🔍</div>
+          <h3>Chọn Bot Phù Hợp</h3>
+          <p>Xem danh sách bot & tool phía trên, chọn cái phù hợp với nhu cầu của bạn</p>
+        </div>
+
+        <div class="guide-arrow">→</div>
+
+        <div class="guide-step reveal">
+          <div class="gs-num">02</div>
+          <div class="gs-icon">👆</div>
+          <h3>Nhấn "Dùng Ngay"</h3>
+          <p>Hệ thống tự chuyển sang Telegram — nhấn <strong>Start</strong> để kích hoạt bot</p>
+        </div>
+
+        <div class="guide-arrow">→</div>
+
+        <div class="guide-step reveal">
+          <div class="gs-num">03</div>
+          <div class="gs-icon">💬</div>
+          <h3>Liên Hệ Nếu Cần</h3>
+          <p>Gặp vấn đề? Nhắn Admin <strong>@Vuadapthesieudz</strong> — hỗ trợ trong vài phút</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CONTACT ===== -->
+  <section class="contact-section" id="contact">
+    <div class="section-wrap">
+      <div class="section-header">
+        <div class="section-tag">📞 Liên Hệ</div>
+        <h2 class="section-title">Kết Nối <span class="gold-text">Ngay</span></h2>
+        <p class="section-sub">Phản hồi nhanh — tận tâm hỗ trợ</p>
+      </div>
+
+      <div class="contact-cards" id="contactCards">
+        <!-- Admin card -->
+        <div class="contact-card reveal" id="adminContactCard">
+          <div class="cc-icon tg-blue">✈️</div>
+          <h3>Admin Chính</h3>
+          <p class="cc-user" id="adminUsernameDisplay">@Vuadapthesieudz</p>
+          <p class="cc-note">Hỗ trợ mọi thắc mắc</p>
+          <a class="btn-cc dark" href="https://t.me/Vuadapthesieudz" target="_blank" id="adminContactLink">
+            Nhắn Tin Ngay ↗
+          </a>
+        </div>
+
+        <!-- Bot card (featured) -->
+        <div class="contact-card contact-featured reveal">
+          <div class="cc-badge">⭐ Bot Official</div>
+          <div class="cc-icon bot-gold">🤖</div>
+          <h3>Bot FCO VIP</h3>
+          <p class="cc-user">@dapthefcovip_bot</p>
+          <p class="cc-note">Bot chính thức của kênh</p>
+          <a class="btn-cc gold" href="https://t.me/dapthefcovip_bot" target="_blank">
+            Dùng Bot Ngay ↗
+          </a>
+        </div>
+      </div>
+
+      <div class="hours-pill">⏰ Giờ hỗ trợ: 8:00 — 23:00 · Mỗi ngày</div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="site-footer">
+    <div class="footer-logo">⚽ VuaDapTheFCO</div>
+    <p class="footer-copy">© 2024 VuaDapTheFCO. All rights reserved.</p>
+    <p class="footer-sub">Kênh bot & tool Telegram chính thức</p>
+  </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>
