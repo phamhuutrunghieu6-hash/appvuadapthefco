@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VuaDapTheFCO — Hệ Thống Quản Trị</title>
+  <!-- Ẩn khỏi search engines -->
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="vdtfco-secure-panel-x7k2m9.css" />
+</head>
+<body>
+
+  <!-- ── Lock Screen ── -->
+  <div class="lock-screen" id="lockScreen">
+    <div class="lock-card">
+      <div class="lock-icon">🔐</div>
+      <h1>Admin Panel</h1>
+      <p>VuaDapTheFCO · Khu vực riêng tư</p>
+      <form id="lockForm">
+        <input
+          type="password"
+          id="pwInput"
+          placeholder="Nhập mật khẩu Admin..."
+          autocomplete="current-password"
+          autofocus
+        />
+        <p class="pw-error" id="pwError"></p>
+        <button type="submit" class="btn-login">Đăng Nhập →</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Admin Dashboard ── -->
+  <div class="dashboard hidden" id="dashboard">
+
+    <!-- Topbar -->
+    <div class="admin-topbar">
+      <div class="admin-logo">⚽ VuaDapTheFCO <span class="admin-badge">ADMIN</span></div>
+      <div class="topbar-right">
+        <a href="index.html" class="btn-top">← Về trang chủ</a>
+        <button class="btn-top btn-logout" id="logoutBtn">Đăng Xuất</button>
+      </div>
+    </div>
+
+    <div class="admin-body">
+
+      <!-- ── Left: Bot List ── -->
+      <div class="panel panel-list">
+        <div class="panel-head">
+          <h2>Danh Sách Bot</h2>
+          <span class="bot-count-badge" id="botCountBadge">0 bot</span>
+        </div>
+
+        <div class="bot-list" id="botList">
+          <!-- Rendered by JS -->
+        </div>
+
+        <button class="btn-add" id="addNewBtn">＋ Thêm Bot Mới</button>
+      </div>
+
+      <!-- ── Right: Edit Form ── -->
+      <div class="panel panel-form">
+        <div class="panel-head">
+          <h2 id="formTitle">Thêm Bot Mới</h2>
+        </div>
+
+        <form class="bot-form" id="botForm">
+          <input type="hidden" id="editId" value="" />
+
+          <label>Tên Bot <span class="req">*</span></label>
+          <input type="text" id="fName" placeholder="VD: Bot FCO VIP" required />
+
+          <label>Link / Username Telegram <span class="req">*</span></label>
+          <input type="text" id="fLink" placeholder="https://t.me/username hoặc @username" required />
+
+          <label>Mô tả ngắn</label>
+          <textarea id="fDesc" rows="3" placeholder="Mô tả chức năng của bot..."></textarea>
+
+          <label>Emoji đại diện</label>
+          <input type="text" id="fEmoji" placeholder="🤖" maxlength="4" />
+
+          <label>Username hiển thị</label>
+          <input type="text" id="fUsername" placeholder="@username" />
+
+          <div class="form-check">
+            <input type="checkbox" id="fFeatured" />
+            <label for="fFeatured">⭐ Đánh dấu nổi bật (hiện đầu tiên)</label>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-save" id="saveBtn">💾 Lưu Bot</button>
+            <button type="button" class="btn-cancel" id="cancelBtn">Hủy</button>
+          </div>
+        </form>
+
+        <!-- Settings -->
+        <div class="settings-block">
+          <div class="settings-title">⚙️ Cài Đặt</div>
+
+          <label>Link Telegram Admin</label>
+          <input type="text" id="sAdminLink" placeholder="https://t.me/..." />
+
+          <label>Username Admin hiển thị</label>
+          <input type="text" id="sAdminUser" placeholder="@username" />
+
+          <button class="btn-save-settings" id="saveSettingsBtn">Lưu Cài Đặt</button>
+
+          <div class="settings-divider"></div>
+
+          <label>Đổi Mật Khẩu Admin</label>
+          <input type="password" id="sNewPw" placeholder="Mật khẩu mới..." />
+          <button class="btn-save-settings btn-pw" id="savePwBtn">🔑 Đổi Mật Khẩu</button>
+        </div>
+
+        <!-- Export -->
+        <div class="export-block">
+          <div class="settings-title">📤 Export Config</div>
+          <p class="export-note">
+            Sao chép JSON này và cập nhật file <code>bots.json</code> trên GitHub
+            để tất cả người dùng thấy thay đổi vĩnh viễn.
+          </p>
+          <button class="btn-export" id="exportBtn">Copy bots.json →</button>
+          <p class="export-success hidden" id="exportSuccess">✅ Đã copy! Paste vào bots.json trên GitHub.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="vdtfco-secure-panel-x7k2m9.js"></script>
+</body>
+</html>

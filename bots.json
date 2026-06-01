@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "name": "Bot FCO VIP",
+    "username": "@dapthefcovip_bot",
+    "link": "https://t.me/dapthefcovip_bot",
+    "desc": "Bot Telegram chính thức của VuaDapTheFCO. Hỗ trợ đầy đủ tính năng, cập nhật liên tục.",
+    "emoji": "🤖",
+    "featured": true,
+    "type": "telegram"
+  }
+]
